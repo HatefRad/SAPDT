@@ -20,6 +20,8 @@ namespace WindowsFormsApplication1
             InitializeComponent();
             this.FormClosing += Form2_FormClosing;
             button1.Enabled = false;
+
+
         }
 
         private void Form2_FormClosing(Object sender, FormClosingEventArgs e)
@@ -35,9 +37,13 @@ namespace WindowsFormsApplication1
         private void groupBox1_Enter(object sender, EventArgs e)
         {
 
-            if (serverName != "" && DBPW != "" && SAPPW != "")
-                button1.Enabled = true;
         }
+
+        private void groupBox1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -63,22 +69,33 @@ namespace WindowsFormsApplication1
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-            //Servername
+             /* Servername */
             serverName = textBox1.Text;
+            if (serverName != "" && DBPW != "" && SAPPW != "")
+                button1.Enabled = true;
+            else
+                button1.Enabled = false;
         }
 
         private void textBox2_TextChanged(object sender, EventArgs e)
         {
-            //DBPW
+             /* Database Password */
             DBPW = textBox2.Text;
+            if (serverName != "" && DBPW != "" && SAPPW != "")
+                button1.Enabled = true;
+            else
+                button1.Enabled = false;
 
         }
 
         private void textBox3_TextChanged(object sender, EventArgs e)
         {
-            //SAPPW
+             /* SAP Password */
             SAPPW = textBox3.Text;
-
+            if (serverName != "" && DBPW != "" && SAPPW != "")
+                button1.Enabled = true;
+            else
+                button1.Enabled = false;
         }
     }
 }
