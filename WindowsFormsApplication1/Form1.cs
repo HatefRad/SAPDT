@@ -15,17 +15,24 @@ namespace WindowsFormsApplication1
     public partial class Form1 : Form
     {
 
-        String DBSel;
+        String DBSel, ServerName, SAPSec, DBSec;
 
-        public Form1(String DBSelected)
+        public Form1(String DBSelected, String SNAME, String SAPPW, String DBPW)
         {
             InitializeComponent();
 
             this.FormClosing += Form1_FormClosing;
                    
             richTextBox1.Text = System.Environment.NewLine + "\t\t !!! You have selected " + DBSelected + " database.\n";
+            richTextBox1.Text += System.Environment.NewLine + SNAME;
+            richTextBox1.Text += System.Environment.NewLine + SAPPW;
+            richTextBox1.Text += System.Environment.NewLine + DBPW;
+
+            ServerName = SNAME;
+            SAPSec = SAPPW;
+            DBSec = DBPW;
             
-            if(DBSelected == "production")
+            if (DBSelected == "production")
                 DBSel = "SBO1130_DIA";
             else
                 DBSel = "SBO1131_DIA";
@@ -42,7 +49,8 @@ namespace WindowsFormsApplication1
             DialogResult result = openFileDialog1.ShowDialog(); // Show the dialog.
             if (result == DialogResult.OK) // Test result.
             {
-                string file = openFileDialog1.FileName;
+                String file = openFileDialog1.FileName;
+                
                 try
                 {
                     String noticeUno = "\t\t!!! Please verify the content of the CSV file and then press Import button to import descriptions to SAP !!\r\n";
@@ -56,7 +64,6 @@ namespace WindowsFormsApplication1
                     button1.Enabled = false;
                     button2.Enabled = true;
                     button2.Tag = file;
-                    Console.WriteLine(DBSel);
                 }
                 catch (IOException)
                 {
@@ -79,22 +86,22 @@ namespace WindowsFormsApplication1
             richTextBox2.Text = "\r\n---------------------------------------------------------------------";
             richTextBox2.Text += "\r\n      PLEASE WAIT !!!     \r\n";
             String file = ((string)((Button)sender).Tag);
-            Program(file, DBSel);
+            Program(file, DBSel, ServerName, SAPSec, DBSec);
         }
         
-        private void Program(string file, String DBSelected)
+        private void Program(String file, String DBSelected, String serverName, String SAPPW, String DBPW)
         {
             Company oCom = new Company();
 
-            oCom.Server = "MRSDIANA";
-            oCom.LicenseServer = "MRSDIANA";
+            oCom.Server = serverName;
+            oCom.LicenseServer = serverName;
             oCom.CompanyDB = DBSelected;
             oCom.DbServerType = BoDataServerTypes.dst_MSSQL2008;
             oCom.UserName = "manager";
-            oCom.Password = "wizard";
+            oCom.Password = SAPPW;
             oCom.UseTrusted = false;
-            oCom.DbPassword = "manager";
             oCom.DbUserName = "sa";
+            oCom.DbPassword = DBPW;
 
             try
             {
