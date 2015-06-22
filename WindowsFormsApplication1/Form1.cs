@@ -22,11 +22,18 @@ namespace WindowsFormsApplication1
             InitializeComponent();
 
             this.FormClosing += Form1_FormClosing;
-                   
-            richTextBox1.Text = System.Environment.NewLine + "\t\t !!! You have selected " + DBSelected + " database.\n";
-            richTextBox1.Text += System.Environment.NewLine + SNAME;
-            richTextBox1.Text += System.Environment.NewLine + SAPPW;
-            richTextBox1.Text += System.Environment.NewLine + DBPW;
+
+            String noticeUno = "\n\tPlease select your CSV file to import in SAP\n\n";
+            String noticeDue = "\n\n\tThe columns must be separated with \" ; \" symbol! \n\n";
+
+            richTextBox3.Text = System.Environment.NewLine + "\t\t----------------------------------------------";
+            richTextBox3.Text += System.Environment.NewLine + "\t\t Selected database: " + DBSelected;
+            richTextBox3.Text += System.Environment.NewLine + "\t\t Selected server: " + SNAME;
+            richTextBox3.Text += System.Environment.NewLine + "\t\t---------------------------------------------";
+            richTextBox3.Text += System.Environment.NewLine;
+            richTextBox3.AppendText(noticeUno);
+            richTextBox3.Text += "\t\t\t\t!!! NOTICE !!!";
+            richTextBox3.AppendText(noticeDue);
 
             ServerName = SNAME;
             SAPSec = SAPPW;
@@ -36,7 +43,6 @@ namespace WindowsFormsApplication1
                 DBSel = "SBO1130_DIA";
             else
                 DBSel = "SBO1131_DIA";
-
         }
 
         private void Form1_FormClosing(Object sender, FormClosingEventArgs e)
@@ -53,15 +59,18 @@ namespace WindowsFormsApplication1
                 
                 try
                 {
-                    String noticeUno = "\t\t!!! Please verify the content of the CSV file and then press Import button to import descriptions to SAP !!\r\n";
-                    String noticeDue = "\t\t!!!     The columns must be separated with \";\" symbol! \r\n\n";
-                    richTextBox1.Text += System.Environment.NewLine;
-                    richTextBox1.AppendText(noticeUno);
-                    richTextBox1.AppendText(noticeDue);
-                    richTextBox1.Text += System.Environment.NewLine;
+                    richTextBox3.Hide();
+
+                    String noticeThree = "\n\t!!!  NOTICE The columns must be separated with \" ; \" symbol! \r\n\n";
+                    String noticeFour = "\n\t!!!  You can verify the content of your file below: \r\n\n";
+                    
+                    richTextBox1.Text = System.Environment.NewLine;
+                    richTextBox1.AppendText(noticeThree);
+                    richTextBox1.AppendText(noticeFour);
                     richTextBox1.Text += System.IO.File.ReadAllText(file);
                     button1.Text = "File is loaded.";
                     button1.Enabled = false;
+                    button6.Enabled = true;
                     button2.Enabled = true;
                     button2.Tag = file;
                 }
@@ -83,10 +92,19 @@ namespace WindowsFormsApplication1
 
         private void button2_Click(object sender, EventArgs e)
         {
-            richTextBox2.Text = "\r\n---------------------------------------------------------------------";
-            richTextBox2.Text += "\r\n      PLEASE WAIT !!!     \r\n";
-            String file = ((string)((Button)sender).Tag);
-            Program(file, DBSel, ServerName, SAPSec, DBSec);
+
+            DialogResult dialogResult = MessageBox.Show("This action will import your file in database.\nAre you sure you want to proceed?", "WARNING", MessageBoxButtons.YesNo);
+            if (dialogResult == DialogResult.Yes)
+            {
+                richTextBox2.Text = "\r\n---------------------------------------------------------------------";
+                richTextBox2.Text += "\r\n      PLEASE WAIT !!!     \r\n";
+                String file = ((string)((Button)sender).Tag);
+                Program(file, DBSel, ServerName, SAPSec, DBSec);   
+            }
+            else if (dialogResult == DialogResult.No)
+            {
+                return;
+            }
         }
         
         private void Program(String file, String DBSelected, String serverName, String SAPPW, String DBPW)
@@ -109,13 +127,13 @@ namespace WindowsFormsApplication1
 
                 if (!oCom.Connected)
                 {
-                    richTextBox2.Text += "\r\n   Unable to connect to DB. Please contact DEV.\r\n";
+                    richTextBox2.Text += "\r\n   Unable to connect to DB: " + DBSelected + ". Please contact DEV.\r\n";
                     throw new Exception(oCom.GetLastErrorDescription());
                 }
 
                 StringBuilder sb = new StringBuilder();
 
-                richTextBox2.Text += "\r\n   Connected to DB..\r\n";
+                richTextBox2.Text += "\r\n   Connected to " + DBSelected + "..\r\n";
                 richTextBox2.Text += "\r\n      Processing the description file..\r\n";
                 richTextBox2.Text += "---------------------------------------------------------------------";
                 foreach (string line in System.IO.File.ReadAllLines(file))
@@ -266,12 +284,13 @@ namespace WindowsFormsApplication1
                 button1.Enabled = true;
                 button1.Text = "Select CSV File";
                 button2.Enabled = false;
+                button6.Enabled = false;
             }
         }
 
         private void button4_Click(object sender, EventArgs e)
         {
-            String dev = "Dev@DianaCorp.com";
+            String dev = "dev@dianacorp.com";
             MessageBox.Show("For support please contact: \r\n" + dev, "Ver. 0.1");
         }
 
@@ -290,6 +309,21 @@ namespace WindowsFormsApplication1
             this.Hide();
             var DBForm = new Form2();
             DBForm.Show();
+        }
+
+        private void richTextBox3_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            richTextBox3.Show();
+            richTextBox1.Clear();
+            button1.Text = "Select CSV File";
+            button1.Enabled = true;
+            button2.Enabled = false;
+            button6.Enabled = false;
         }
     }
 }
