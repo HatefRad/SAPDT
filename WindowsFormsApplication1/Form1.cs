@@ -38,8 +38,8 @@ namespace WindowsFormsApplication1
             ServerName = SNAME;
             SAPSec = SAPPW;
             DBSec = DBPW;
-            
-            if (DBSelected == "production")
+
+            if (DBSelected == "PRODUCTION")
                 DBSel = "SBO1130_DIA";
             else
                 DBSel = "SBO1131_DIA";
@@ -96,8 +96,8 @@ namespace WindowsFormsApplication1
             DialogResult dialogResult = MessageBox.Show("This action will import your file in database.\nAre you sure you want to proceed?", "WARNING", MessageBoxButtons.YesNo);
             if (dialogResult == DialogResult.Yes)
             {
-                richTextBox2.Text = "\r\n---------------------------------------------------------------------";
-                richTextBox2.Text += "\r\n      PLEASE WAIT !!!     \r\n";
+                richTextBox2.AppendText("\r\n---------------------------------------------------------------------");
+                richTextBox2.AppendText("\r\n      PLEASE WAIT !!!     \r\n");
                 String file = ((string)((Button)sender).Tag);
                 Program(file, DBSel, ServerName, SAPSec, DBSec);   
             }
@@ -127,15 +127,13 @@ namespace WindowsFormsApplication1
 
                 if (!oCom.Connected)
                 {
-                    richTextBox2.Text += "\r\n   Unable to connect to DB: " + DBSelected + ". Please contact DEV.\r\n";
+                    richTextBox2.AppendText("\r\n   Unable to connect to DB: " + DBSelected + ". Please contact DEV.\r\n");
                     throw new Exception(oCom.GetLastErrorDescription());
                 }
 
-                StringBuilder sb = new StringBuilder();
-
-                richTextBox2.Text += "\r\n   Connected to " + DBSelected + "..\r\n";
-                richTextBox2.Text += "\r\n      Processing the description file..\r\n";
-                richTextBox2.Text += "---------------------------------------------------------------------";
+                richTextBox2.AppendText("\r\n   Connected to " + DBSelected + "..\r\n");
+                richTextBox2.AppendText("\r\n      Processing the description file..\r\n");
+                richTextBox2.AppendText("---------------------------------------------------------------------");
                 foreach (string line in System.IO.File.ReadAllLines(file))
                 {
                     string TableName, SKU, FieldAlias, LangCode, Trans;
@@ -143,42 +141,52 @@ namespace WindowsFormsApplication1
 
                     string[] fields = line.Split(';');
 
-                    TableName = fields[0];
-                    SKU = fields[1];
-                    FieldAlias = fields[2];
-                    LangCode = fields[3];
-                    Trans = fields[4];
+                    TableName = "OITM";
+                    SKU = fields[0];
+                    FieldAlias = fields[1];
+                    LangCode = fields[2];
+                    Trans = fields[3];
 
                     String Lang = "";
                     String TransType = "";
 
-                    if (FieldAlias == "U_DescAggMod")
+                    if (FieldAlias == "short") {
                         TransType = "short description";
-                    else
-                        TransType = "description";
+                        FieldAlias = "U_DescAggMod";
+                    } else {
+                        TransType = "long description";
+                        FieldAlias = "U_DescEstesa";
+                    }
 
                     switch (LangCode)
                     {
+                        case "en":
+                            Lang = "English";
+                            LangCode = "3";
+                            break;
+                        case "it":
+                            Lang = "Italian";
+                            LangCode = "13";
+                            break;
+                        case "de":
+                            Lang = "German";
+                            LangCode = "9";
+                            break;
+                        case "fr":
+                            Lang = "French";
+                            LangCode = "22";
+                            break;
+                        case "es":
+                            Lang = "Spanish";
+                            LangCode = "23";
+                            break;
+                        case "jp":
+                            Lang = "Japanese";
+                            LangCode = "30";
+                            break;
                         default:
                             Lang = "Other";
-                            break;
-                        case "3":
-                            Lang = "English";
-                            break;
-                        case "13":
-                            Lang = "Italian";
-                            break;
-                        case "9":
-                            Lang = "German";
-                            break;
-                        case "22":
-                            Lang = "French";
-                            break;
-                        case "23":
-                            Lang = "Spanish";
-                            break;
-                        case "30":
-                            Lang = "Japanese";
+                            LangCode = "3";
                             break;
                     }
 
@@ -189,7 +197,7 @@ namespace WindowsFormsApplication1
                         oRec.MoveFirst();
                     else
                     {
-                        richTextBox2.Text += Environment.NewLine + "ItemName not FOUND!!!";
+                        richTextBox2.AppendText(Environment.NewLine + "ItemName not FOUND!!!");
                         throw new Exception("ItemName Not FOUND!!!");
                     }
 
@@ -220,13 +228,12 @@ namespace WindowsFormsApplication1
                         oMlt.TranslationsInUserLanguages.LanguageCodeOfUserLanguage = System.Convert.ToInt32(LangCode);
                         oMlt.TranslationsInUserLanguages.Translationscontent = Trans;
 
-                        // tranentry not found
+                        /* Tranentry not found */
                         if (oMlt.Add() != 0)
                             throw new Exception(oCom.GetLastErrorDescription());
 
-                        sb.Insert(0, string.Format("\n{0} {1} for SKU: {2} has been processed.", Lang, TransType, SKU));
-                        richTextBox2.Text += Environment.NewLine;
-                        richTextBox2.Text += sb;
+                        richTextBox2.AppendText(Environment.NewLine);
+                        richTextBox2.AppendText(Environment.NewLine + Lang + " " + TransType + " for SKU: " + SKU + " has been processed.");
                     }
                     else
                     {
@@ -247,9 +254,8 @@ namespace WindowsFormsApplication1
                                     if (oMlt.Update() != 0)
                                         throw new Exception(oCom.GetLastErrorDescription());
 
-                                    sb.Insert(0, string.Format("\n{0} {1} for SKU: {2} has been updated.", Lang, TransType, SKU));
-                                    richTextBox2.Text += Environment.NewLine;
-                                    richTextBox2.Text += sb;
+                                    richTextBox2.AppendText(Environment.NewLine);
+                                    richTextBox2.AppendText(Environment.NewLine + Lang + " " + TransType + " for SKU: " + SKU + " has been updated.");
                                     break;
                                 }
                             }
@@ -263,18 +269,18 @@ namespace WindowsFormsApplication1
                             if (oMlt.Update() != 0)
                                 throw new Exception(oCom.GetLastErrorDescription());
 
-                            sb.Insert(0, string.Format("\n{0} {1} for SKU: {2} has been inserted.", Lang, TransType, SKU));
-                            richTextBox2.Text += Environment.NewLine;
-                            richTextBox2.Text += sb;
+                            richTextBox2.AppendText(Environment.NewLine);
+                            richTextBox2.AppendText(Environment.NewLine + Lang + " " + TransType + " for SKU: " + SKU + " has been inserted.");
                         }
                     }
                 }
-                richTextBox2.Text += Environment.NewLine + "\nDescriptions are successfully loaded in SAP !!!";
+                
+                richTextBox2.AppendText(Environment.NewLine + "\nDescriptions are successfully loaded in SAP !!!");
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                richTextBox2.Text += "\r\n\t\t !!! There was an error. Please try again or contact DEV";
+                richTextBox2.AppendText(Environment.NewLine + "\t\t !!! There was an error. Please try again or contact DEV");
             }
             finally
             {
